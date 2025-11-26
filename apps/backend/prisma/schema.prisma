@@ -13,5 +13,18 @@ model Url {
   originalUrl String
   clicks      Int      @default(0)
   createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  deletedAt   DateTime?
   isActive    Boolean  @default(true)
+
+  clicksRecords Click[]
+}
+
+model Click {
+  id        Int      @id @default(autoincrement())
+  urlId     Int
+  url       Url      @relation(fields: [urlId], references: [id])
+  ip        String?
+  userAgent String?
+  createdAt DateTime @default(now())
 }
