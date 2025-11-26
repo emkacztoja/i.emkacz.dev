@@ -15,21 +15,39 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <div className={theme}>
-        <div className="min-h-screen bg-background text-foreground">
+        <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
           <BrowserRouter>
-            <div className="container mx-auto p-4 max-w-2xl">
-              <div className="flex justify-between items-center mb-8">
-                <h1 className="text-3xl font-semibold">i.emkacz.dev</h1>
+            <div className="w-full max-w-2xl p-6">
+              <header className="flex items-center justify-between mb-6">
+                <div>
+                  <h1 className="text-4xl font-extrabold tracking-tight">i.emkacz.dev</h1>
+                  <p className="text-sm text-muted-foreground">Tiny, elegant URL shortener — secure by design.</p>
+                </div>
                 <div className="flex items-center gap-4">
                   <ThemeToggle theme={theme} onToggle={() => setTheme(theme === 'light' ? 'dark' : 'light')} />
                 </div>
-              </div>
+              </header>
 
-              <Routes>
-                <Route path="/" element={<ShortenForm />} />
-                <Route path="/admin/login" element={<AdminLogin />} />
-                <Route path="/admin" element={<AdminUrls />} />
-              </Routes>
+              <main>
+                <div className="bg-card shadow-md rounded-lg p-6">
+                  <ShortenForm />
+                </div>
+
+                <Routes>
+                  <Route path="/admin/login" element={<AdminLogin />} />
+                  <Route path="/admin" element={<AdminUrls />} />
+                </Routes>
+              </main>
+
+              <footer className="mt-8 text-center text-sm text-muted-foreground">
+                <div className="mb-2">Connect</div>
+                <div className="flex items-center justify-center gap-4">
+                  <a href="https://github.com/emkacztoja" target="_blank" rel="noreferrer" className="underline">GitHub</a>
+                  <a href="https://linkeding.com/in/aleksander-kowalczuk" target="_blank" rel="noreferrer" className="underline">LinkedIn</a>
+                  <a href="https://emkacz.pl" target="_blank" rel="noreferrer" className="underline">Website</a>
+                  <a href="mailto:akowalczuk@emkacz.pl" className="underline">Email</a>
+                </div>
+              </footer>
             </div>
           </BrowserRouter>
         </div>

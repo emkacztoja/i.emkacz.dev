@@ -16,7 +16,7 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 export const ShortenForm = () => {
-  const [values, setValues] = useState<FormValues>({ originalUrl: '', customAlias: '', expireDays: 0 });
+  const [values, setValues] = useState<FormValues>({ originalUrl: '', customAlias: '', expireDays: 7 });
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const mutation = useMutation({
     mutationFn: shortenUrl,
@@ -73,10 +73,9 @@ export const ShortenForm = () => {
         <label className="block text-sm font-medium mb-1">Expiration</label>
         <select
           className="border rounded p-2"
-          value={values.expireDays ?? 0}
+          value={values.expireDays ?? 7}
           onChange={(e) => setValues({ ...values, expireDays: Number(e.target.value) })}
         >
-          <option value={0}>Permanent</option>
           <option value={1}>1 day</option>
           <option value={3}>3 days</option>
           <option value={7}>7 days</option>
