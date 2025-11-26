@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { useEffect, useState } from 'react';
-import { fetchAdminUrls, updateUrl, deleteUrl, setAdminApiKey } from '../../lib/api';
+import { fetchAdminUrls, updateUrl, deleteUrl, setAdminApiKey, shortenUrl } from '../../lib/api';
 
 export default function AdminUrls() {
   const [items, setItems] = useState<any[]>([]);
@@ -10,6 +10,9 @@ export default function AdminUrls() {
   const [total, setTotal] = useState(0);
   const [q, setQ] = useState('');
   const [loading, setLoading] = useState(false);
+  const [createOriginal, setCreateOriginal] = useState('');
+  const [createAlias, setCreateAlias] = useState('');
+  const [createExpireDays, setCreateExpireDays] = useState(0);
   const perPage = 20;
 
   const load = async () => {
@@ -86,8 +89,62 @@ export default function AdminUrls() {
   };
 
   const bulkPurge = async () => {
-    // purge = hard delete handled by same deleteUrl; kept for clarity
-    await bulkDelete();
+    // Purge all URLs in the system (iterate pages)
+    const confirmMsg = 'This will permanently DELETE ALL URLs in the system. This action is irreversible. Type DELETE to confirm.';
+    const answer = prompt(confirmMsg);
+    if (answer !== 'DELETE') {
+      alert('Purge aborted');
+      return;
+    }
+
+    if (!confirm('Final confirmation: delete ALL URLs? This cannot be undone.')) return;
+
+    setLoading(true);
+    try {
+      let curPage = 1;
+      while (true) {
+        const res = await fetchAdminUrls({ page: curPage, perPage });
+        const pageItems = res.items || [];
+        if (!pageItems.length) break;
+        for (const it of pageItems) {
+          try {
+            await deleteUrl(it.shortId);
+          } catch (err) {
+            console.error('Failed to delete', it.shortId, err);
+          }
+        }
+        // stop when we've processed all items
+        if (res.total <= curPage * perPage) break;
+        curPage += 1;
+      }
+    } finally {
+      setLoading(false);
+      load();
+    }
+  };
+
+  const onCreate = async () => {
+    if (!createOriginal) {
+      alert('Original URL is required');
+      return;
+    }
+    setLoading(true);
+    try {
+      const payload: any = { originalUrl: createOriginal };
+      if (createAlias) payload.customAlias = createAlias;
+      if (createExpireDays) payload.expireDays = createExpireDays;
+      await shortenUrl(payload);
+      setCreateOriginal('');
+      setCreateAlias('');
+      setCreateExpireDays(0);
+      load();
+      alert('Short URL created');
+    } catch (err) {
+      console.error(err);
+      alert('Failed to create short URL');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -98,6 +155,28 @@ export default function AdminUrls() {
           <button onClick={() => { setAdminApiKey(null); window.location.href = '/admin/login'; }} className="px-3 py-1 border rounded">Logout</button>
         </div>
       </div>
+
+      {/* Create form */}
+      <div className="mb-4 border p-3 rounded">
+        <h3 className="font-medium mb-2">Create short URL</h3>
+        <div className="space-y-2">
+          <input className="w-full border rounded p-2" placeholder="Original URL" value={createOriginal} onChange={(e) => setCreateOriginal(e.target.value)} />
+          <input className="w-full border rounded p-2" placeholder="Custom alias (optional)" value={createAlias} onChange={(e) => setCreateAlias(e.target.value)} />
+          <div>
+            <label className="block text-sm font-medium mb-1">Expiration</label>
+            <select className="border rounded p-2" value={createExpireDays} onChange={(e) => setCreateExpireDays(Number(e.target.value))}>
+              <option value={0}>Permanent</option>
+              <option value={1}>1 day</option>
+              <option value={3}>3 days</option>
+              <option value={7}>7 days</option>
+            </select>
+          </div>
+          <div>
+            <button onClick={onCreate} className="px-3 py-1 bg-green-600 text-white rounded">Create</button>
+          </div>
+        </div>
+      </div>
+
       <div className="mb-4">
         <input
           className="w-full border rounded p-2"
@@ -108,7 +187,7 @@ export default function AdminUrls() {
         <div className="mt-2 flex gap-2">
           <button onClick={() => { setPage(1); load(); }} className="px-3 py-1 bg-blue-600 text-white rounded">Search</button>
           <button onClick={bulkDelete} className="px-3 py-1 bg-red-600 text-white rounded">Delete Selected</button>
-          <button onClick={bulkPurge} className="px-3 py-1 bg-red-800 text-white rounded">Purge Selected</button>
+          <button onClick={bulkPurge} className="px-3 py-1 bg-red-800 text-white rounded">Purge All</button>
         </div>
       </div>
 

@@ -12,9 +12,9 @@ export default async function shortenRoute(fastify: FastifyInstance) {
         return reply.status(400).send({ errors: parsed.error.issues });
       }
 
-      const { originalUrl, customAlias } = parsed.data;
+      const { originalUrl, customAlias, expireDays } = parsed.data;
       try {
-        const url = await createShortUrl(fastify, originalUrl, customAlias);
+        const url = await createShortUrl(fastify, originalUrl, customAlias, expireDays);
         reply.send({ shortUrl: `https://i.emkacz.dev/${url.shortId}` });
       } catch (err) {
         // If the service throws a Fastify error (conflict), let it bubble

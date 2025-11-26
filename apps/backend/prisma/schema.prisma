@@ -31,12 +31,15 @@ model Url {
   updatedAt   DateTime @updatedAt
   deletedAt   DateTime?
   isActive    Boolean  @default(true)
+  // optional expiration timestamp; null = permanent
+  expiresAt   DateTime?
 
   // relation to detailed click records (optional)
   clicksRecords Click[]
 
   @@index([isActive])
   @@index([createdAt])
+  @@index([expiresAt])
 }
 
 model Click {

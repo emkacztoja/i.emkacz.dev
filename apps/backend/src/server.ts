@@ -10,6 +10,7 @@ import { env } from './env.js';
 import sensible from '@fastify/sensible';
 import adminAuthPlugin from './plugins/adminAuth.js';
 import adminUrlsRoute from './routes/admin/urls.js';
+import cleanupPlugin from './plugins/cleanup.js';
 
 const fastify = Fastify({
   logger: pino({ level: 'info' }),
@@ -24,6 +25,7 @@ await fastify.register(adminAuthPlugin);
 await fastify.register(shortenRoute);
 await fastify.register(redirectRoute);
 await fastify.register(adminUrlsRoute, { prefix: '/api/admin' });
+await fastify.register(cleanupPlugin);
 
 const start = async () => {
   try {
