@@ -1,6 +1,10 @@
 import { Button } from '../../../components/Button';
 import { useState } from 'react';
-import { QRCode } from 'qrcode.react';
+import * as QRLib from 'qrcode.react';
+
+// qrcode.react has different export shapes across versions/builds (CJS/ESM).
+// Normalize to a component reference that works in both cases.
+const QRCode: any = (QRLib as any)?.default ?? (QRLib as any)?.QRCode ?? QRLib;
 
 type Props = {
   shortUrl: string;
