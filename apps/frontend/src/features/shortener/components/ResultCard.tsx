@@ -1,6 +1,6 @@
 import { Button } from '../../../components/Button';
 import { useState } from 'react';
-import QRCode from 'qrcode.react';
+import { QRCode } from 'qrcode.react';
 
 type Props = {
   shortUrl: string;
