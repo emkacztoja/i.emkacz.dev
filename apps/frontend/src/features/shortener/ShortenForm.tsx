@@ -6,6 +6,7 @@ import { shortenUrl } from '../../lib/api';
 import { Button } from '../../components/Button';
 import { Input } from '../../components/Input';
 import { ResultCard } from './components/ResultCard';
+import { Link, Hash, Calendar, AlertCircle, Sparkles } from 'lucide-react';
 
 const formSchema = z.object({
   originalUrl: z.string().url('Enter a valid URL'),
@@ -56,36 +57,80 @@ export const ShortenForm = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      {errorMessage && <div className="text-sm text-red-600">{errorMessage}</div>}
-      <Input
-        placeholder="https://example.com"
-        value={values.originalUrl}
-        onChange={(e) => setValues({ ...values, originalUrl: e.target.value })}
-      />
-      <Input
-        placeholder="custom alias (optional)"
-        value={values.customAlias ?? ''}
-        onChange={(e) => setValues({ ...values, customAlias: e.target.value })}
-      />
+    <div className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {errorMessage && (
+          <div className="flex items-center gap-3 p-4 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/30 border-2 border-red-200 dark:border-red-800 rounded-lg animate-fade-in">
+            <AlertCircle className="w-5 h-5 flex-shrink-0" />
+            <span>{errorMessage}</span>
+          </div>
+        )}
 
-      <div>
-        <label className="block text-sm font-medium mb-1">Expiration</label>
-        <select
-          className="border rounded p-2"
-          value={values.expireDays ?? 7}
-          onChange={(e) => setValues({ ...values, expireDays: Number(e.target.value) })}
+        <div className="space-y-2">
+          <label className="flex items-center gap-2 text-sm font-semibold text-foreground">
+            <Link className="w-4 h-4 text-primary" />
+            Enter your long URL
+          </label>
+          <Input
+            placeholder="https://example.com/very/long/url/that/needs/shortening"
+            value={values.originalUrl}
+            onChange={(e) => setValues({ ...values, originalUrl: e.target.value })}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <label className="flex items-center gap-2 text-sm font-semibold text-foreground">
+            <Hash className="w-4 h-4 text-primary" />
+            Custom alias (optional)
+          </label>
+          <Input
+            placeholder="my-custom-link"
+            value={values.customAlias ?? ''}
+            onChange={(e) => setValues({ ...values, customAlias: e.target.value })}
+          />
+          <p className="text-xs text-muted-foreground">
+            Leave empty for an auto-generated short code
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          <label className="flex items-center gap-2 text-sm font-semibold text-foreground">
+            <Calendar className="w-4 h-4 text-primary" />
+            Link expiration
+          </label>
+          <select
+            className="w-full rounded-lg border-2 border-border bg-background px-4 py-3 text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary hover:border-primary/50"
+            value={values.expireDays ?? 7}
+            onChange={(e) => setValues({ ...values, expireDays: Number(e.target.value) })}
+          >
+            <option value={1}>1 day</option>
+            <option value={3}>3 days</option>
+            <option value={7}>7 days (recommended)</option>
+          </select>
+        </div>
+
+        <Button
+          className="w-full flex items-center justify-center gap-2"
+          type="submit"
+          disabled={mutation.isPending}
         >
-          <option value={1}>1 day</option>
-          <option value={3}>3 days</option>
-          <option value={7}>7 days</option>
-        </select>
-      </div>
+          {mutation.isPending ? (
+            <>
+              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              Generating...
+            </>
+          ) : (
+            <>
+              <Sparkles className="w-5 h-5" />
+              Generate short link
+            </>
+          )}
+        </Button>
+      </form>
 
-      <Button className="w-full" type="submit" disabled={mutation.isPending}>
-        {mutation.isPending ? 'Generating...' : 'Generate short link'}
-      </Button>
       {mutation.isSuccess && <ResultCard shortUrl={mutation.data.shortUrl} />}
-    </form>
+    </div>
   );
 };
+
+
