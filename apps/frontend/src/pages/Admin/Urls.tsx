@@ -15,6 +15,23 @@ export default function AdminUrls() {
   const [createExpireDays, setCreateExpireDays] = useState(0);
   const perPage = 20;
 
+  // Helper to format the expiration timestamp
+  const formatExpiry = (expiresAt: string | null | undefined) => {
+    if (!expiresAt) return 'Permanent';
+    try {
+      const d = new Date(expiresAt);
+      if (isNaN(d.getTime())) return 'Invalid date';
+      const now = new Date();
+      const diffMs = d.getTime() - now.getTime();
+      const daysLeft = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+      const fmt = d.toLocaleString();
+      if (diffMs <= 0) return `Expired (${fmt})`;
+      return `${fmt} (${daysLeft}d)`;
+    } catch (err) {
+      return 'Invalid date';
+    }
+  };
+
   const load = async () => {
     setLoading(true);
     try {
@@ -67,7 +84,7 @@ export default function AdminUrls() {
   };
 
   const bulkDelete = async () => {
-    const toDelete = Object.entries(selected).filter(([k, v]) => v).map(([k]) => k);
+    const toDelete = Object.entries(selected).filter(([, v]) => v).map(([k]) => k);
     if (toDelete.length === 0) {
       alert('No URLs selected');
       return;
@@ -204,6 +221,7 @@ export default function AdminUrls() {
                 <th className="text-left p-2">Clicks</th>
                 <th className="text-left p-2">Active</th>
                 <th className="text-left p-2">Created</th>
+                <th className="text-left p-2">Expires</th>
                 <th className="text-left p-2">Actions</th>
               </tr>
             </thead>
@@ -216,6 +234,7 @@ export default function AdminUrls() {
                   <td className="p-2">{it.clicks}</td>
                   <td className="p-2">{it.isActive ? 'Yes' : 'No'}</td>
                   <td className="p-2">{new Date(it.createdAt).toLocaleString()}</td>
+                  <td className="p-2">{formatExpiry(it.expiresAt)}</td>
                   <td className="p-2">
                     <button onClick={() => onToggle(it.shortId, it.isActive)} className="mr-2 px-2 py-1 border rounded">{it.isActive ? 'Deactivate' : 'Activate'}</button>
                     <button onClick={() => onDelete(it.shortId)} className="px-2 py-1 border rounded text-red-600">Delete</button>
